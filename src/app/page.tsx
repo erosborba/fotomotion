@@ -3,6 +3,7 @@ import Hero from '@/components/sections/Hero'
 import HowItWorks from '@/components/sections/HowItWorks'
 import Pricing from '@/components/sections/Pricing'
 import CallToAction from '@/components/sections/CallToAction'
+import Footer from '@/components/sections/Footer'
 
 export default function Home() {
   return (
@@ -11,6 +12,7 @@ export default function Home() {
       <HowItWorks />
       <Pricing />
       <CallToAction />
+      <Footer />
     </main>
   )
 }
