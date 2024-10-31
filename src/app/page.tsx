@@ -2,8 +2,8 @@
 'use client'
 
 import { useState } from 'react'
-import ImageUpload from '@/components/upload/ImageUpload'
-import ConfirmationView from '@/components/upload/ConfirmationView'
+import ImageUpload from '@/app/components/upload/ImageUpload'
+import ConfirmationView from '@/app/components/upload/ConfirmationView'
 import { Loader2 } from 'lucide-react'
 
 export default function Home() {
@@ -11,9 +11,9 @@ export default function Home() {
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const handleUploadComplete = (imageUrl: string, imageId: string) => {
-    console.log('Upload completo:', { imageUrl, imageId }) // Log para debug
-    setUploadedImage({ url: imageUrl, id: imageId })
+  const handleUploadComplete = (imageUrl: string) => {
+    console.log('Upload completo:', { imageUrl })
+    setUploadedImage({ url: imageUrl, id: imageUrl })
     setIsUploading(false)
   }
 

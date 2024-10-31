@@ -7,7 +7,9 @@ import { Upload, X, Loader2 } from 'lucide-react'
 import Image from 'next/image'
 
 interface ImageUploadProps {
-  onUploadComplete: (imageUrl: string) => void
+  onUploadStart: () => void;
+  onUploadComplete: (imageUrl: string) => void;
+  onError: (error: string) => void;
 }
 
 export default function ImageUpload({ onUploadComplete }: ImageUploadProps) {
