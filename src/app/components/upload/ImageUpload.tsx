@@ -4,6 +4,7 @@
 import { useState, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { Upload, X, Loader2 } from 'lucide-react'
+import Image from 'next/image'
 
 interface ImageUploadProps {
   onUploadComplete: (imageUrl: string) => void
@@ -17,7 +18,6 @@ export default function ImageUpload({ onUploadComplete }: ImageUploadProps) {
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0]
     
-    // Validações
     if (!file.type.startsWith('image/')) {
       setError('Por favor, envie apenas imagens.')
       return
@@ -28,15 +28,12 @@ export default function ImageUpload({ onUploadComplete }: ImageUploadProps) {
       return
     }
 
-    // Preview
     const objectUrl = URL.createObjectURL(file)
     setPreview(objectUrl)
     setError(null)
 
-    // Upload
     try {
       setIsUploading(true)
-      
       const formData = new FormData()
       formData.append('file', file)
 
@@ -85,11 +82,15 @@ export default function ImageUpload({ onUploadComplete }: ImageUploadProps) {
           </div>
         ) : preview ? (
           <div className="relative">
-            <img
-              src={preview}
-              alt="Preview"
-              className="max-h-64 mx-auto rounded"
-            />
+            <div className="relative h-64 w-full">
+              <Image
+                src={preview}
+                alt="Preview"
+                fill
+                className="object-contain rounded"
+                sizes="(max-width: 768px) 100vw, 400px"
+              />
+            </div>
             <button
               onClick={(e) => {
                 e.stopPropagation()
