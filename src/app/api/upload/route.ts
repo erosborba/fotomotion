@@ -1,64 +1,59 @@
 // src/app/api/upload/route.ts
 import { NextResponse } from 'next/server'
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
-import { v4 as uuidv4 } from 'uuid'
-import { prisma } from '@/lib/prisma'
-
-const s3 = new S3Client({
-  region: process.env.AWS_REGION!,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-  },
-})
+import { UploadService } from '@/services/UploadService'
 
 export async function POST(request: Request) {
+  console.log('🟦 Iniciando requisição de upload')
   try {
     const formData = await request.formData()
-    const file = formData.get('file') as File
-    
+    const file = formData.get('file') as File | null
+
+    console.log('🟦 Dados do arquivo:', {
+      exists: !!file,
+      type: file?.type,
+      size: file?.size,
+      name: file?.name
+    })
+
     if (!file) {
-      return NextResponse.json(
-        { error: 'No file provided' },
-        { status: 400 }
-      )
+      console.log('🔴 Nenhum arquivo recebido')
+      return NextResponse.json({ error: 'No file provided' }, { status: 400 })
     }
 
     // Converter File para Buffer
     const buffer = Buffer.from(await file.arrayBuffer())
+    console.log('🟦 Buffer criado, tamanho:', buffer.length)
+
+    // Verificar variáveis de ambiente
+    console.log('🟦 Verificando configurações:', {
+      hasAWSKey: !!process.env.AWS_ACCESS_KEY_ID,
+      hasAWSSecret: !!process.env.AWS_SECRET_ACCESS_KEY,
+      hasAWSRegion: !!process.env.AWS_REGION,
+      hasAWSBucket: !!process.env.AWS_BUCKET_NAME,
+      bucket: process.env.AWS_BUCKET_NAME,
+      region: process.env.AWS_REGION
+    })
+
+    const result = await UploadService.handleUpload(file)
+    console.log('🟩 Upload finalizado com sucesso:', result)
     
-    // Gerar nome único para o arquivo
-    const key = `uploads/${uuidv4()}-${file.name}`
+    return NextResponse.json(result)
 
-    // Upload para S3
-    await s3.send(new PutObjectCommand({
-      Bucket: process.env.AWS_BUCKET_NAME,
-      Key: key,
-      Body: buffer,
-      ContentType: file.type,
-    }))
-
-    // URL da imagem
-    const imageUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`
-
-    // Criar registro no banco
-    const image = await prisma.image.create({
-      data: {
-        originalUrl: imageUrl,
-        status: 'WAITING_PAYMENT',
-        // Nota: userId será adicionado quando implementarmos autenticação
-        userId: 'temp-user-id',
-      },
-    })
-
-    return NextResponse.json({ 
-      imageUrl,
-      imageId: image.id
-    })
   } catch (error) {
-    console.error('Upload error:', error)
+    console.log('🔴 Erro no upload:', {
+      error,
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    })
+
     return NextResponse.json(
-      { error: 'Error uploading file' },
+      { 
+        error: error instanceof Error ? error.message : 'Failed to upload file',
+        details: {
+          message: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : undefined
+        }
+      },
       { status: 500 }
     )
   }
