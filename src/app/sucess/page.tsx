@@ -1,12 +1,11 @@
-// src/app/success/page.tsx
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { CheckCircle2, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 
-export default function SuccessPage() {
+function SuccessContent() {
   const searchParams = useSearchParams()
   const sessionId = searchParams.get('session_id')
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
@@ -19,14 +18,14 @@ export default function SuccessPage() {
       return
     }
 
-    console.log('Verificando sessão:', sessionId) // Log para debug
+    console.log('Verificando sessão:', sessionId)
 
     async function checkPayment() {
       try {
         const response = await fetch(`/api/verify-payment?session_id=${sessionId}`)
         const data = await response.json()
 
-        console.log('Resposta da verificação:', data) // Log para debug
+        console.log('Resposta da verificação:', data)
 
         if (response.ok) {
           setStatus('success')
@@ -36,7 +35,7 @@ export default function SuccessPage() {
           setMessage(data.error || 'Erro ao verificar pagamento')
         }
       } catch (error) {
-        console.error('Erro na verificação:', error) // Log para debug
+        console.error('Erro na verificação:', error)
         setStatus('error')
         setMessage('Erro ao verificar status do pagamento')
       }
@@ -97,5 +96,26 @@ export default function SuccessPage() {
         </div>
       </div>
     </main>
+  )
+}
+
+export default function SuccessPage() {
+  return (
+    <Suspense 
+      fallback={
+        <main className="min-h-screen bg-gray-50 py-12">
+          <div className="max-w-xl mx-auto px-4">
+            <div className="bg-white rounded-lg shadow p-6 text-center">
+              <div className="space-y-4">
+                <Loader2 className="w-12 h-12 mx-auto text-blue-500 animate-spin" />
+                <p className="text-gray-600">Carregando...</p>
+              </div>
+            </div>
+          </div>
+        </main>
+      }
+    >
+      <SuccessContent />
+    </Suspense>
   )
 }
