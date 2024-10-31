@@ -1,12 +1,12 @@
 'use client'
 
 import { useSearchParams } from 'next/navigation'
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { ArrowLeft, CreditCard, Lock } from 'lucide-react'
 import Image from 'next/image'
 import { loadStripe } from '@stripe/stripe-js'
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const searchParams = useSearchParams()
   const imageUrl = searchParams.get('imageUrl')
   const [isProcessing, setIsProcessing] = useState(false)
@@ -125,5 +125,13 @@ export default function CheckoutPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<div>Carregando...</div>}>
+      <CheckoutContent />
+    </Suspense>
   )
 } 
